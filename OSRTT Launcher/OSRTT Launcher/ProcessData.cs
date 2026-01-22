@@ -96,6 +96,7 @@ namespace OSRTT_Launcher
             public osMethods osMethod { get; set; }
             public string ExtraInfo { get; set; }
             public int MovingAverageSize { get; set; }
+            public bool AddedDelay { get; set; }
         }
 
         public class normalisedGamma
@@ -477,7 +478,16 @@ namespace OSRTT_Launcher
             }
             else { return new CulledSamples { sampleArray = samples, NoiseLevel = 0 }; }
         }
-
+        
+        /// <summary>
+        /// Process raw response time data finding 
+        /// </summary>
+        /// <param name="data">list of list of raw result data</param>
+        /// <param name="res">which result to process this time</param>
+        /// <param name="startDelay">how many samples to use at the start to get a good starting level</param>
+        /// <param name="processedGamma">the gamma table</param>
+        /// <param name="runSetting">the settings used to process the data</param>
+        /// <returns></returns>
         public processedResult ProcessResponseTimeData(List<List<rawResultData>> data, resultSelection res, int startDelay, List<gammaResult> processedGamma, runSettings runSetting)
         {
             //This is a long one. This is the code that builds the gamma curve, finds the start/end points and calculates response times and overshoot % (gamma corrected)
@@ -1720,6 +1730,76 @@ namespace OSRTT_Launcher
             return data;
         }
 
+
+        public static bool checkForABL(List<List<rawResultData>> rawResults, List<List<processedResult>> processedResults)
+        {
+            bool ABLFound = false;
+            if (rawResults.Count == 0 || processedResults.Count == 0)
+            {
+                return ABLFound;
+            }
+            rawResultData rawToCheck;
+            foreach (var item in rawResults[0])
+            {
+                if (item.StartingRGB == 0 && item.EndRGB > 203) // pick only the two highest change results to check
+                {
+                    foreach (var processed in processedResults[0])
+                    {
+                        if (processed.StartingRGB == 0 && processed.EndRGB == item.EndRGB)
+                        {
+                            try
+                            {
+                                if (processed.initTime < 2)
+                                {
+                                    int startAvg = 0;
+                                    int midAvg = 0;
+                                    int endAvg = 0;
+                                    int delta = 1000;
+                                    int numOfSamples = 250;
+                                    ProcessData pd = new ProcessData();
+                                    List<int> smoothedSamples = pd.smoothData(item.Samples.ToArray(), processed.offset).ToList();
+                                    for (int i = processed.initEndIndex; i < processed.initEndIndex + numOfSamples; i++)
+                                    {
+                                        startAvg += smoothedSamples[i];
+                                    }
+                                    int midPoint = (smoothedSamples.Count - processed.initEndIndex) /2;
+                                    if (midPoint + numOfSamples < smoothedSamples.Count - 1)
+                                    {
+                                        for (int i = midPoint; i < midPoint + numOfSamples; i++)
+                                        {
+                                            midAvg += smoothedSamples[i];
+                                        }
+                                    }
+                                    else { midAvg = endAvg; }
+                                    for (int i = smoothedSamples.Count - 1; i > smoothedSamples.Count - numOfSamples; i--)
+                                    {
+                                        endAvg += smoothedSamples[i];
+                                    }
+                                    startAvg /= numOfSamples;
+                                    midAvg /= numOfSamples;
+                                    endAvg /= numOfSamples;
+                                    if ((startAvg - endAvg) > delta)
+                                    {
+                                        if ((midAvg - endAvg) > (delta/2))
+                                        { 
+                                            // Might be a pointless check, but only return true for OLEDs.
+                                            ABLFound = true; 
+                                            return ABLFound;
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex.Message + ex.StackTrace);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return ABLFound;
+        }
 
 /////////////////////////////////////////////////////////////////////////////
 //              Input Lag

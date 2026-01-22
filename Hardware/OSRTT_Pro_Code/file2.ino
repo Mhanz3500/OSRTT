@@ -22,7 +22,7 @@ char extGammaKeys[] = {'q', 'y', 'h', 'z', 'n', 'u', 's', 'j', 'm', 'e', 'i', 'k
 unsigned long curr_time = micros();
 uint32_t sample_count = 0;
 //50ms sample time default
-unsigned long samplingTime = 50000;
+unsigned long samplingTime = 150000;
 uint16_t adcBuff[32000];
 
 //Button values
@@ -36,7 +36,7 @@ SPISettings settingsA(1000000, MSBFIRST, SPI_MODE0);
 
 //Serial connection values
 int boardType = 1;
-String firmware = "2.0";
+String firmware = "2.1";
 int testRuns = 4;
 bool vsync = true;
 bool extendedGamma = true;
@@ -227,6 +227,7 @@ int checkLightLevel() // Check light level & modulate potentiometer value
 
 void runADC(int curr, int nxt, char key, String type) // Run test, press key and print results
 {
+  sample_count = 0;
   digitalWrite(3, HIGH);
   // Set next colour
   Keyboard.print(key);

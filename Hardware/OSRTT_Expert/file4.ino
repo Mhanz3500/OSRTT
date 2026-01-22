@@ -141,9 +141,15 @@ void loop() {
       Serial.println(count);
       //Serial.print(",");
       delay(100);
-      adcBuff[count] = getSingleADCValue();
+      uint32_t samples = 0;
+      for (int q= 0; q< 100; q++)
+      {
+        samples += getSingleADCValue();
+      }
+      samples /= 100;
       //Serial.println(value);
       //delay(2000);
+      adcBuff[count] = samples;
       count++;
     }
     Serial.print("PROADC:");
@@ -601,42 +607,44 @@ void loop() {
   }
   else if (input[0] == 'W')
   {
-    // long s = micros();
-    // int counter = 10000;
-    // for(int i = 0; i < counter; i++)
-    // {
-    //   adcBuff[i] = getSingleADCValue();
-    // }
-    // long e = micros();
-    // Serial.print("Sample time: ");
-    // float t = (e - s) / counter;
-    // Serial.println(t);
-    while (input[0] != 'X')
+    if (input[1] == '2')
     {
-      getSerialChars();
-      if (digitalRead(buttonPin))
+      for(int p = 0; p < 65536; p+= 1000)
       {
-        Serial.println("EXSTART");
-        for (int p = 0; p < 256; p++)
+        TestLEDControl(p);
+        delay(1000);
+        Serial.println(p);
+      }
+    }
+    else
+    {
+      while (input[0] != 'X')
+      {
+        getSerialChars();
+        if (digitalRead(buttonPin))
         {
-          digitalPotWrite(p);
-          delay(10);
-          long t = fillADCBuffer();
-          Serial.print("EXSWEEP:");
-          Serial.print(p);
-          Serial.print(",");
-          Serial.print(p);
-          Serial.print(",");
-          Serial.print(t);
-          Serial.print(",10000,");
-          for (int l = 0; l < 10000; l++)
+          Serial.println("EXSTART");
+          for (int p = 0; p < 256; p++)
           {
-            Serial.print(adcBuff[l]);
+            digitalPotWrite(p);
+            delay(10);
+            long t = fillADCBuffer();
+            Serial.print("EXSWEEP:");
+            Serial.print(p);
             Serial.print(",");
+            Serial.print(p);
+            Serial.print(",");
+            Serial.print(t);
+            Serial.print(",10000,");
+            for (int l = 0; l < 10000; l++)
+            {
+              Serial.print(adcBuff[l]);
+              Serial.print(",");
+            }
+            Serial.println();
           }
-          Serial.println();
+          Serial.println("EXFIN");
         }
-        Serial.println("EXFIN");
       }
     }
   }

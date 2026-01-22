@@ -30,7 +30,7 @@ int buttonState = 0;
 const int buttonPin = 10;
 
 //Digital Potentiometer values (SPI)
-int CS = 1;
+int CS = 0;
 SPISettings settingsA(60000000, MSBFIRST, SPI_MODE0);
 
 //Serial connection values
@@ -245,6 +245,7 @@ void runADC(int curr, int nxt, char key, String type, int samples = 36650, int s
   }
   // Set next colour
   Keyboard.print(key);
+  // TestLEDControl(nxt);
 
   if (startDelay != 0)
   {

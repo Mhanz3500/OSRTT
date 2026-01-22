@@ -148,6 +148,21 @@ void oledTestRunning(int fromRGB, int toRGB, int runCount) {
   //delay(100);
 }
 
+void oledLatencyRunning(int shotNum)
+{
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(SSD1306_WHITE); 
+  display.setCursor(0, 0);     
+  display.println(F("RUNNING"));
+  display.println(F("LATENCY"));
+  display.println(F("TEST"));
+  display.print(F("SHOT: "));
+  display.println(shotNum);
+
+  display.display();
+}
+
 void rotateDisplay(int rotation)
 {
   // 0 = Standard

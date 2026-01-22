@@ -505,6 +505,8 @@ void loop() {
           int sw = micros();
           for (int k = 0; k < clicks; k++)
           {
+            oledLatencyRunning(k);
+            sw = micros();
             runInputLagTest(totalTime);
             int sw2 = micros();
             if (sw2 < (sw + timeBetween))

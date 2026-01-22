@@ -115,6 +115,11 @@ void getSerialChars() {
   input[size] = 0;
 }
 
+void TestLEDControl(int val)
+{
+  analogWrite(A1, val);
+}
+
 void setup() {
   pinMode(buttonPin, INPUT_PULLUP); //Button input on pin 2
   if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
@@ -131,6 +136,8 @@ void setup() {
   pinMode (11, OUTPUT); //D11, SW6
   pinMode (12, OUTPUT); //D12, SW7
   pinMode (13, OUTPUT); //D13, SW8
+
+  pinMode(A1, OUTPUT);
   
   pinMode(CS, OUTPUT); // D0, CS
   digitalWrite(CS, LOW);

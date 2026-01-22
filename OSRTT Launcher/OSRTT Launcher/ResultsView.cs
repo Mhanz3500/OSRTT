@@ -1596,6 +1596,7 @@ namespace OSRTT_Launcher
                 {
                     avgOsSign = "(RGB %)";
                 }
+                
                 string fileName = monitorInfo + ".csv";
                 avgCsvString.AppendLine("Starting RGB,End RGB,Complete Response Time (ms)," + avgRtType + "," + avgPerType + "," + avgOsType + " " + avgOsSign + ",Visual Response Rating,Input Lag (ms)");
                 foreach (ProcessData.processedResult i in averageData)
@@ -1625,6 +1626,19 @@ namespace OSRTT_Launcher
                     excel.SaveDataToHeatmap(averageData, runSettings, path, resultsFolderPath + "\\" + monitorInfo + ".XLSX", headers);
                 }
             }
+            // Unsure if I want to leave this in. Commenting out for now.
+            /*bool ABLFound = ProcessData.checkForABL(rawData, processedData);
+            if (ABLFound)
+            {
+                DialogResult d = MessageBox.Show(
+                    "An adaptive brightness limiter may be active on this display which may affect the accuracy of these results, and this software's ability to process them. Open the guide on how to work around ABLs?",
+                    "Adaptive Brightness Limiter Found", MessageBoxButtons.YesNo, MessageBoxIcon.Hand);
+                if (d == DialogResult.Yes)
+                {
+                    // Open help page
+                    Process.Start("https://andymanic.github.io/OSRTTDocs/docs/troubleshooting/ABLs/");
+                }
+            }*/
         }
 
         private void importRawFileBtn_Click(object sender, EventArgs e)

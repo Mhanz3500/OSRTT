@@ -30,7 +30,7 @@ namespace OSRTT_Launcher
         private double ProDLFW = 1.7;
         private double ExpertDLFW = 1.0;
         public int boardType = -1;
-        private string softwareVersion = "4.85";
+        private string softwareVersion = "4.9";
 
         public static System.IO.Ports.SerialPort port;
         delegate void SetTextCallback(string text);
@@ -1903,6 +1903,10 @@ namespace OSRTT_Launcher
                                 break;
                             }
                         }
+                        if (start < 500)
+                        { // if the start point is less than ~9ms 
+                            runSettings.AddedDelay = true;
+                        }
                         if (Properties.Settings.Default.captureTime == 0)
                         {
                             if (start == 0 || start > 1100)
@@ -2313,6 +2317,18 @@ namespace OSRTT_Launcher
                             {
                                 Thread.Sleep(100);
                             }
+                            bool ABLFound = ProcessData.checkForABL(results, multipleRunData);
+                            if (ABLFound)
+                            {
+                                DialogResult d = showMessageBox("Adaptive Brightness Limiter Found",
+                                    "An adaptive brightness limiter may be active on this display which may affect the accuracy of these results, and this software's ability to process them. Open the guide on how to work around ABLs?"
+                                    , MessageBoxButtons.YesNo, MessageBoxIcon.Hand);
+                                if (d == DialogResult.Yes)
+                                {
+                                    // Open help page
+                                    Process.Start("https://andymanic.github.io/OSRTTDocs/docs/troubleshooting/ABLs/");
+                                }
+                            }
                             if (multipleRunData.Count != 0 && averageData.Count != 0)
                             {
                                 this.Invoke((MethodInvoker)delegate ()
@@ -2390,11 +2406,11 @@ namespace OSRTT_Launcher
                     }
                 }
                 else 
-                { 
+                {
                     if (!vsyncTrigger)
                     {
                         paused = true;
-                        Thread.Sleep(300);
+                        Thread.Sleep(800);
                         var item = fpsList.Find(x => x.FPSValue == getSelectedFps());
                         SendKeys.SendWait(item.CKey);
                         Thread.Sleep(100);
@@ -2408,6 +2424,14 @@ namespace OSRTT_Launcher
                         }
                         Thread.Sleep(100);
                         vsyncTrigger = true;
+                        if (runSettings.AddedDelay)
+                        {
+                            SendKeys.SendWait("{HOME}");
+                        }
+                        else
+                        {
+                            SendKeys.SendWait("{END}");
+                        }
                     }
                     if (paused)
                     {
@@ -3083,7 +3107,7 @@ namespace OSRTT_Launcher
         {
             if (!Properties.Settings.Default.SuppressDiagBox)
             {
-                DialogResult d = MessageBox.Show(title, message, buttons, icon);
+                DialogResult d = MessageBox.Show(message, title, buttons, icon);
                 return d;
             }
             else
@@ -3323,7 +3347,7 @@ namespace OSRTT_Launcher
 
                 
                 OSRTT_Launcher.DirectX.System.DSystem.inputLagMode = true;
-                OSRTT_Launcher.DirectX.System.DSystem.StartRenderForm("OSRTT Test Window (DirectX 11)", 800, 600, false, true, selectedDisplay, 1);
+                OSRTT_Launcher.DirectX.System.DSystem.StartRenderForm("OSRTT Test Window (DirectX 11)", 100, 100, false, true, selectedDisplay, 1);
                 inputLagRun = !inputLagRun;
                 port.Write("X");
                 OSRTT_Launcher.DirectX.System.DSystem.inputLagMode = false;
